@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Time-Honed Strength</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{background:#05060f;color:#e5e7eb;font-family:Inter,sans-serif}
+.glass{background:rgba(40,40,80,.55);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.08)}
+.progress-ring circle{fill:none;stroke-width:10;stroke-linecap:round}
+.badgeOverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:50}
+</style>
+</head>
+<body>
+
+<!-- NAME SCREEN -->
+<div id="nameScreen" class="min-h-screen flex items-center justify-center">
+<div class="glass p-10 rounded-3xl text-center max-w-md">
+<h1 class="text-4xl font-bold mb-4">Who Are You Becoming?</h1>
+<input id="username" placeholder="Enter your name" class="w-full p-3 rounded-xl bg-gray-900 mb-4 text-center">
+<button onclick="saveName()" class="w-full py-3 bg-indigo-600 rounded-xl">Begin Transformation</button>
+</div>
+</div>
+
+<div id="app" class="hidden">
+
+<!-- HEADER -->
+<section class="py-10 text-center">
+<h1 id="welcome" class="text-5xl font-extrabold bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent"></h1>
+<p id="affirmation" class="text-gray-400 mt-2"></p>
+</section>
+
+<!-- PROGRESS RING -->
+<section class="flex justify-center mb-8">
+<svg class="progress-ring" width="160" height="160">
+<circle r="70" cx="80" cy="80" stroke="#1f2937"></circle>
+<circle id="ring" r="70" cx="80" cy="80" stroke="#6366f1" stroke-dasharray="439" stroke-dashoffset="439"></circle>
+</svg>
+</section>
+
+<!-- SYMBOL LEGEND -->
+<section class="max-w-3xl mx-auto mb-10 glass p-6 rounded-2xl text-center">
+<h3 class="text-xl font-bold mb-3">Strength Code</h3>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-gray-300">
+<div>🔥 = Pushups</div>
+<div>💎 = Squats</div>
+<div>⚡ = Crunches</div>
+<div>🦍 = Pullups</div>
+</div>
+<p class="text-sm text-gray-400 mt-3">Master the code. Become the language.</p>
+</section>
+
+<!-- LEVELS -->
+<section class="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6 px-6" id="levels"></section>
+</div>
+
+<!-- BADGE POPUP -->
+<div class="badgeOverlay" id="badgeBox">
+<div class="glass p-10 rounded-3xl text-center max-w-md">
+<h2 id="badgeTitle" class="text-3xl font-bold mb-4"></h2>
+<p id="badgeMsg" class="text-gray-300 mb-6"></p>
+<button onclick="closeBadge()" class="px-6 py-3 bg-indigo-600 rounded-xl">I Accept The Next Level</button>
+</div>
+</div>
+
+<script>
+const affirmations=[
+"You are rewriting your story.",
+"Discipline is becoming your signature.",
+"Old you is officially outdated.",
+"Nobody sees it yet. They will.",
+"You’re building a body your mind can trust."
+];
+
+const badgeLines=[
+"Pain bowed today.",
+"You didn’t negotiate with weakness.",
+"You chose progress over comfort.",
+"Another layer of armor forged.",
+"Momentum is now on your side."
+];
+
+const levels=[
+{n:1,title:"Initiate",w:"🔥10  💎10  ⚡10"},
+{n:2,title:"Challenger",w:"🔥20  💎20  ⚡20  🦍10"},
+{n:3,title:"Striver",w:"🔥30  💎30  ⚡30  🦍15"},
+{n:4,title:"Warrior",w:"🔥40  💎40  ⚡40  🦍20"},
+{n:5,title:"Iron Soul",w:"🔥50  💎50  ⚡50  🦍25"},
+{n:6,title:"Relentless",w:"🔥60  💎60  ⚡60  🦍30"},
+{n:7,title:"Beast Mode",w:"🔥70  💎70  ⚡70  🦍35"},
+{n:8,title:"Unbreakable",w:"🔥80  💎80  ⚡80  🦍40"},
+{n:9,title:"Elite",w:"🔥90  💎90  ⚡90  🦍45"},
+{n:10,title:"Legend",w:"🔥100 💎100 ⚡100 🦍50"}
+];
+
+function saveName(){
+localStorage.setItem("ths_name",username.value);
+location.reload();
+}
+
+const name=localStorage.getItem("ths_name");
+if(name){
+nameScreen.classList.add("hidden");
+app.classList.remove("hidden");
+welcome.innerText=`Welcome, ${name}.`;
+affirmation.innerText=affirmations[Math.floor(Math.random()*affirmations.length)];
+loadLevels();
+}
+
+function loadLevels(){
+levels.forEach(l=>{
+ const done=localStorage.getItem("lvl"+l.n);
+ document.getElementById("levels").innerHTML+=`
+ <div class="glass p-6 rounded-2xl text-center">
+ <h3 class="text-xl font-bold">Level ${l.n} — ${l.title}</h3>
+ <p class="text-2xl tracking-widest my-3">${l.w}</p>
+ <div class="flex gap-2">
+ <button onclick="complete(${l.n})" class="flex-1 py-3 rounded-xl ${done?'bg-green-600':'bg-indigo-600'}">
+ ${done?'Completed':'Mark Complete'}
+ </button>
+ <button onclick="undo(${l.n})" class="flex-1 py-3 rounded-xl bg-red-600">Undo</button>
+ </div></div>`;
+ });
+updateRing();
+}
+
+function complete(n){
+ if(localStorage.getItem("lvl"+n)) return;
+ localStorage.setItem("lvl"+n,true);
+ badgeTitle.innerText=`Level ${n} Forged`;
+ badgeMsg.innerText=badgeLines[Math.floor(Math.random()*badgeLines.length)];
+ badgeBox.style.display="flex";
+}
+
+function undo(n){
+ localStorage.removeItem("lvl"+n);
+ location.reload();
+}
+
+function closeBadge(){location.reload();}
+
+function updateRing(){
+ const total=levels.length;
+ let done=0;
+ levels.forEach(l=>{if(localStorage.getItem("lvl"+l.n))done++;});
+ const offset=439-(439*(done/total));
+ document.getElementById("ring").style.strokeDashoffset=offset;
+}
+</script>
+</body>
+</html>
